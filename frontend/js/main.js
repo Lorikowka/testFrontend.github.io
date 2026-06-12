@@ -101,17 +101,33 @@ let DIPLOMAS = [];
 
 async function loadDiplomas() {
   try {
-    const response = await fetch('/api/diplomas');
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    if (data.success && data.diplomas) {
-      DIPLOMAS = data.diplomas;
-      console.log(`📜 Дипломы загружены: ${DIPLOMAS.length}`);
-      renderDiplomaPreviews();
+    const response = await fetch('/api/diplomas').catch(() => null);
+    if (response && response.ok) {
+      const data = await response.json();
+      if (data.success && data.diplomas) {
+        DIPLOMAS = data.diplomas;
+      }
+    } else {
+      console.warn('API недоступно, используются локальные данные дипломов');
+      DIPLOMAS = [
+        { "img": "images/certificates/cert_1.webp", "title": "Диплом магистра с отличием — ПсковГУ" },
+        { "img": "images/certificates/cert_2.webp", "title": "Диплом о профессиональной переподготовке" },
+        { "img": "images/certificates/cert_3.webp", "title": "Сертификаты — Психотерапия взросления" },
+        { "img": "images/certificates/cert_4.webp", "title": "Сертификаты — Эмоциональный интеллект" },
+        { "img": "images/certificates/cert_5.webp", "title": "Диплом 1" },
+        { "img": "images/certificates/cert_6.webp", "title": "Диплом 2 — файл 1" },
+        { "img": "images/certificates/cert_7.webp", "title": "Диплом 2 — файл 2" },
+        { "img": "images/certificates/cert_8.webp", "title": "Диплом 3" },
+        { "img": "images/certificates/cert_9.webp", "title": "Диплом 4" },
+        { "img": "images/certificates/cert_10.webp", "title": "Диплом 5" },
+        { "img": "images/certificates/cert_11.webp", "title": "Диплом 7" },
+        { "img": "images/certificates/cert_12.webp", "title": "Диплом 8" }
+      ];
     }
+    console.log(`📜 Дипломы загружены: ${DIPLOMAS.length}`);
+    renderDiplomaPreviews();
   } catch (error) {
     console.error('❌ Ошибка загрузки дипломов:', error);
-    // Fallback: если API не ответило, можно оставить пустым или загрузить дефолтные
   }
 }
 loadDiplomas();
@@ -615,7 +631,7 @@ loadSchedule();
 // ---- Загрузка услуг с бэкенда ----
 async function loadServices() {
   try {
-    const response = await fetch('/api/services');
+    const response = await fetch(`${BACKEND_URL}/api/services`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
     if (data.success && data.services) {
@@ -1010,6 +1026,11 @@ if (successModal) {
 if (successModal) {
   successModal.addEventListener('click', e => {
     if (e.target === successModal && modalClose) modalClose.click();
+  });
+}
+
+}); // DOMContentLoaded
+e.click();
   });
 }
 
