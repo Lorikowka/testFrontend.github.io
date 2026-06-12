@@ -97,20 +97,24 @@ const sectionObserver = new IntersectionObserver(entries => {
 
 sections.forEach(s => sectionObserver.observe(s));
 
-const DIPLOMAS = [
-  { img: 'images/diplomas/diploma_1.png', title: 'Диплом магистра с отличием — ПсковГУ, психолого-педагогическое образование, 2025' },
-  { img: 'images/diplomas/diploma_3.png', title: 'Диплом о профессиональной переподготовке — Институт прикладной психологии, психолог-тренер, 340 часов, 2025' },
-  { img: 'images/diplomas/diploma_4.png', title: 'Сертификаты — Психотерапия взросления: введение и воссоединение с чувствами, 2024' },
-  { img: 'images/diplomas/diploma_5.png', title: 'Сертификаты — Эмоциональный интеллект в психотерапии взросления и терапия, центрированная на чувствах, 2024' },
-  { img: 'images/diploma_1/file-001.png', title: 'Диплом 1' },
-  { img: 'images/diploma_2/file-001.png', title: 'Диплом 2 — файл 1' },
-  { img: 'images/diploma_2/file-002.png', title: 'Диплом 2 — файл 2' },
-  { img: 'images/diploma_3/file-001.png', title: 'Диплом 3' },
-  { img: 'images/diploma_4/file-001.png', title: 'Диплом 4' },
-  { img: 'images/diploma_5/file-001.png', title: 'Диплом 5' },
-  { img: 'images/diploma_7/file-001.png', title: 'Диплом 7' },
-  { img: 'images/diploma_8/file-001.png', title: 'Диплом 8' },
-];
+let DIPLOMAS = [];
+
+async function loadDiplomas() {
+  try {
+    const response = await fetch('/api/diplomas');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    if (data.success && data.diplomas) {
+      DIPLOMAS = data.diplomas;
+      console.log(`📜 Дипломы загружены: ${DIPLOMAS.length}`);
+      renderDiplomaPreviews();
+    }
+  } catch (error) {
+    console.error('❌ Ошибка загрузки дипломов:', error);
+    // Fallback: если API не ответило, можно оставить пустым или загрузить дефолтные
+  }
+}
+loadDiplomas();
 
 const diplomaScrollEl = document.getElementById('diplomas-scroll');
 const diplomaPrevBtn  = document.getElementById('diploma-prev');
@@ -204,6 +208,7 @@ function updateDiplomaNavButtons() {
 
 function renderDiplomaPreviews() {
   if (!diplomaScrollEl) return;
+  diplomaScrollEl.innerHTML = ''; // Clear previous content
 
   DIPLOMAS.forEach((diploma, index) => {
     const item = document.createElement('div');
@@ -236,7 +241,6 @@ function renderDiplomaPreviews() {
 }
 
 if (diplomaScrollEl) {
-  renderDiplomaPreviews();
   diplomaScrollEl.addEventListener('scroll', updateDiplomaNavButtons);
 }
 
@@ -989,6 +993,17 @@ if (modalClose) {
     selectedSlotInfo.classList.add('hidden');
     btnStep2.disabled = true;
     goToStep(1);
+  });
+}
+
+if (successModal) {
+  successModal.addEventListener('click', e => {
+    if (e.target === successModal && modalClose) modalClose.click();
+  });
+}
+
+}); // DOMContentLoaded
+);
   });
 }
 
