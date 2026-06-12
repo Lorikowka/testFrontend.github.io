@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 import random
 import urllib.parse
@@ -21,7 +22,32 @@ import aiohttp
 
 
 BASE_DIR = Path(__file__).resolve().parent
-LOGGER = logging.getLogger("knyazkova_vk_bot")
+
+# ——————————————————————————————
+# ЛОГИРОВАНИЕ С РОТАЦИЕЙ
+# ——————————————————————————————
+def setup_logging():
+    log_dir = BASE_DIR / "logs"
+    log_dir.mkdir(exist_ok=True)
+    log_file = log_dir / "bot.log"
+
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+    
+    # Ротация: 5 файлов по 5 МБ
+    file_handler = RotatingFileHandler(log_file, maxBytes=5*1024*1024, backupCount=5, encoding="utf-8")
+    file_handler.setFormatter(formatter)
+    
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    
+    logger = logging.getLogger("knyazkova_vk_bot")
+    logger.setLevel(logging.INFO)
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    
+    return logger
+
+LOGGER = setup_logging()
 VK_API = "https://api.vk.com/method"
 VK_API_VERSION = "5.199"
 
@@ -739,7 +765,6 @@ async def main_async() -> None:
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     try:
         asyncio.run(main_async())
     except KeyboardInterrupt:

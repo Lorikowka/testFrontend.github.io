@@ -13,7 +13,6 @@ process.env.VK_NOTIFY_PEER_IDS = '';
 
 const app = require('../server');
 const db = require('../database');
-const reviewsDb = require('../reviewsDatabase');
 const { buildVkEventMessage } = require('../lib/vkNotifier');
 
 const tests = [];
@@ -24,7 +23,6 @@ function test(name, fn) {
 
 async function withServer(fn) {
   await db.ready;
-  await reviewsDb.ready;
   const server = http.createServer(app);
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const { port } = server.address();
@@ -60,7 +58,7 @@ test('reviews endpoint stores a site review', async () => {
       })
     });
     const body = await response.json();
-    const rows = await reviewsDb.getAllReviews(1);
+    const rows = await db.getAllReviews(1);
 
     assert.equal(response.status, 201);
     assert.equal(body.success, true);
@@ -128,7 +126,6 @@ test('VK notification message includes booking details', async () => {
   }
 
   await new Promise(resolve => db.db.close(resolve));
-  await new Promise(resolve => reviewsDb.db.close(resolve));
 
   if (failed > 0) {
     process.exitCode = 1;

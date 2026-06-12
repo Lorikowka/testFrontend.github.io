@@ -615,6 +615,41 @@ function getBusySessionByDatetime(sessionDatetime) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// ФУНКЦИИ ДЛЯ РАБОТЫ С ОТЗЫВАМИ
+// ═══════════════════════════════════════════════════════════
+
+function createReview(data) {
+  return new Promise((resolve, reject) => {
+    const { rating, name, contact, message, source = 'site' } = data;
+    const sql = `
+      INSERT INTO reviews (rating, name, contact, message, source)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+
+    db.run(sql, [rating, name, contact, message, source], function(err) {
+      if (err) reject(err);
+      else resolve({ id: this.lastID });
+    });
+  });
+}
+
+function getAllReviews(limit = 50, offset = 0) {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT * FROM reviews
+      ORDER BY created_at DESC
+      LIMIT ?
+      OFFSET ?
+    `;
+
+    db.all(sql, [limit, offset], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
 // ФУНКЦИИ ДЛЯ НАСТРОЕК
 // ═══════════════════════════════════════════════════════════
 
@@ -712,6 +747,9 @@ module.exports = {
   getSession,
   getSessionsByPaymentId,
   getBusySessionByDatetime,
+  // Отзывы
+  createReview,
+  getAllReviews,
   // Настройки
   setSetting,
   getSetting

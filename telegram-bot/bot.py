@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import html
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 import urllib.parse
 from dataclasses import dataclass
@@ -38,7 +39,36 @@ from telegram.request import HTTPXRequest
 
 
 BASE_DIR = Path(__file__).resolve().parent
-LOGGER = logging.getLogger("knyazkova_bot")
+
+# ——————————————————————————————
+# ЛОГИРОВАНИЕ С РОТАЦИЕЙ
+# ——————————————————————————————
+def setup_logging():
+    log_dir = BASE_DIR / "logs"
+    log_dir.mkdir(exist_ok=True)
+    log_file = log_dir / "bot.log"
+
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+    
+    # Ротация: 5 файлов по 5 МБ
+    file_handler = RotatingFileHandler(log_file, maxBytes=5*1024*1024, backupCount=5, encoding="utf-8")
+    file_handler.setFormatter(formatter)
+    
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    
+    logger = logging.getLogger("knyazkova_bot")
+    logger.setLevel(logging.INFO)
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    
+    # Подавляем лишний шум от библиотек
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    
+    return logger
+
+LOGGER = setup_logging()
 
 
 def load_env_file(path: Path) -> None:
@@ -394,8 +424,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.effective_message.reply_text(
             f"<b>Админ-панель записи</b>\n\nBackend: {status}\nВыберите действие.\n\n"
             f"<i>Управление расписанием:</i>\n"
-            f"<code>/block YYYY-MM-DD</code> — закрыть дату для записи\n"
-            f"<code>/unblock YYYY-MM-DD</code> — открыть дату",
+            f"<code>/block YYYY-MM-DD</code> — закрыть дату\n"
+            f"<code>/unblock YYYY-MM-DD</code> — открыть дату\n"
+            f"Например: <code>/block 2026-06-15 Отпуск</code>",
         reply_markup=main_keyboard(),
         parse_mode="HTML",
     )
@@ -646,7 +677,6 @@ def build_application() -> Application:
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     if SETTINGS.admin_id <= 0:
         LOGGER.warning("TELEGRAM_ADMIN_ID is 0; bot access is open to every Telegram user")
     app = build_application()

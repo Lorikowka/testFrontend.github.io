@@ -68,6 +68,24 @@ const migrations = [
           AND client_email <> ''
       `);
     }
+  },
+  {
+    id: '003_unified_reviews_table',
+    up: async db => {
+      await run(db, `
+        CREATE TABLE IF NOT EXISTS reviews (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          rating INTEGER NOT NULL,
+          name TEXT NOT NULL,
+          contact TEXT NOT NULL,
+          message TEXT NOT NULL,
+          status TEXT DEFAULT 'new',
+          source TEXT DEFAULT 'site',
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      await run(db, `CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews(status)`);
+    }
   }
 ];
 
