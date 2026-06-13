@@ -309,22 +309,13 @@
   </div>
 </footer>
 
-<script src="js/main.js?v=group-capacity-2"></script>
-<script>
-// Показываем модальное окно если ?payment_success=true
-(function checkPaymentSuccess() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('payment_success') === 'true') {
-    // Удаляем параметры из URL
-    window.history.replaceState({}, '', window.location.pathname);
-    // Показываем модальное окно
-    setTimeout(() => {
-      const modal = document.getElementById('success-modal');
-      if (modal) modal.classList.remove('hidden');
-    }, 500);
-  }
-})();
-</script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/gallery.js"></script>
+  <script src="js/booking.js"></script>
+  <script src="js/reviews.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
 
